@@ -2,21 +2,28 @@ import * as sqliteVec from "sqlite-vec";
 import Database from "better-sqlite3";
 import OpenAI from "openai";
 import 'dotenv/config'
+import fs from "fs";
 
 const vectorConfig = {
     chunkLength: 500,
     chuckOverlap: 100,
     embeddingDimension: 768,
-    dbPath: "db/demo.db3",
+    dbPath: "db/rag_database.db3",
+    embedModelBaseUrl: "http://localhost:11434/v1",
+    embedModelApiKey: "ollama",
+    embedModel: "embed",
 }
 
+if (!fs.existsSync('db')) {
+    fs.mkdirSync('db');
+}
 const db = new Database(vectorConfig.dbPath);
 db.pragma('journal_mode = WAL');
 sqliteVec.load(db);
 
 const embeddingAI = new OpenAI({
-    baseURL: "http://localhost:11434/v1",
-    apiKey: process.env.OPENAI_API_KEY,
+    baseURL: vectorConfig.embedModelBaseUrl,
+    apiKey: vectorConfig.embedModelApiKey,
 });
 
 const chunkText = (text, chunkSize, overlap) => {
@@ -51,32 +58,59 @@ const chunkText = (text, chunkSize, overlap) => {
 
 const embed = async (string) => {
     const vector = await embeddingAI.embeddings.create({
-        model: "embed",
+        model: vectorConfig.embedModel,
         input: chunkText(string, vectorConfig.chunkLength, vectorConfig.chuckOverlap)
     });
     return vector.data[0].embedding;
 }
 
-const indexContent = async ({ objectArray, tableName, dropTable = true }) => {
+const insertData = async ({ dataArray, tableName, dropTable = true }) => {
     if (dropTable) {
-        db.prepare(`DROP TABLE IF EXISTS ${tableName}`).run();
+        db.exec(`DROP TABLE IF EXISTS ${tableName}`);
     }
-    db.exec(`CREATE VIRTUAL TABLE IF NOT EXISTS ${tableName} USING vec0(embedding float[${vectorConfig.embeddingDimension}])`);
-    for (const row of objectArray) {
-        db.prepare(`INSERT INTO ${tableName}(rowid, embedding) VALUES (?, ?)`,)
-            .run(BigInt(row.id), new Float32Array(row.vector));
+
+    db.exec(`CREATE TABLE IF NOT EXISTS ${tableName} (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            content TEXT NOT NULL,
+            vector TEXT NOT NULL,
+            metadata TEXT NOT NULL
+        );`);
+
+    const insertStmt = db.prepare(`INSERT INTO ${tableName} (content, vector, metadata) VALUES (?, ?, ?)`);
+
+    for (const row of dataArray) {
+        const vector = await embed(row.content);
+        insertStmt.run(row.content, JSON.stringify(vector), JSON.stringify(row.metadata));
     }
 }
 
-const search = async (searchString, tableName, resultQty = 3) => {
-    const query = await embed(searchString);
+
+const indexTable = (tableName) => {
+    db.exec(`DROP TABLE IF EXISTS ${tableName}_vector`);
+    db.exec(`CREATE VIRTUAL TABLE IF NOT EXISTS ${tableName}_vector USING vec0(embedding float[${vectorConfig.embeddingDimension}])`);
+
+    const rows = db.prepare(`SELECT id, vector FROM ${tableName}`).all();
+    const insertStmt = db.prepare(`INSERT INTO ${tableName}_vector (rowid, embedding) VALUES (?, ?)`);
+
+    for (const row of rows) {
+        insertStmt.run(BigInt(row.id), new Float32Array(JSON.parse(row.vector)));
+    }
+}
+
+const search = async (text, tableName, resultQty = 3) => {
+    const query = await embed(text);
 
     const result = db
-        .prepare(`SELECT rowid as id, distance FROM ${tableName} WHERE embedding MATCH ? ORDER BY distance LIMIT ${resultQty}`)
+        .prepare(`SELECT rowid as id, distance FROM ${tableName}_vector WHERE embedding MATCH ? ORDER BY distance LIMIT ${resultQty}`)
         .all(new Float32Array(query));
 
-    return result;
+    const docIDs = result.map(row => row.id).join(',');
+    const sql = `SELECT content, metadata FROM ${tableName} WHERE id IN (${docIDs})`;
+
+    const docs = db.prepare(sql).all();
+
+    return docs
 }
 
-export default { vectorConfig, db, embed, chunkText, indexContent, search }
+export default { vectorConfig, db, embed, chunkText, insertData, indexTable, search }
 
