@@ -1,6 +1,7 @@
 # sqlite-vec NodeJS  RAG example
 
 Simple RAG (Retrieval Augmented generation) example With sqlite-vec local vector database.
+You will find this helpful in creating a customer support chatbot without using langchain.
 
 ### About sqlite-vec
 sqlite-vec is an extremely small, "fast enough" vector search SQLite extension that runs anywhere! A successor to sqlite-vss.
