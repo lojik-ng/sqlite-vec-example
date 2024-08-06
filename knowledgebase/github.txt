@@ -1,0 +1,26 @@
+Enterprise Managed User accounts now require email verification
+enterpriseidentity
+August 1, 2024
+Enterprise managed users (EMUs) must now prove ownership of their email addresses. Existing EMU account email addresses do not have to take this step unless the email address matches one on another GitHub.com account.
+
+Enterprises with EMU accounts that have conflicts have received notification from GitHub regarding specific accounts that have an email address which also exists on another github.com account. Certain 3rd party applications may not work correctly until they have reverified their email address.
+
+New EMU accounts will have their enterprise’s shortcode appended to their email address’s prefix until it is verified, or their administrator changes the email address to another value.
+
+To verify an email address, follow the steps outlined in our documentation. EMU account email addresses are defined by your identity provider, and cannot be changed directly within GitHub. You will need to work with your IdP administrator to change your email address if necessary.
+
+Some users may find that 3rd party GitHub Apps and OAuth apps may not handle the placeholder email correctly, resulting in missing data in these apps. In rare cases, Enterprise Owners may also find that their email provider does not support the “plus addressing” scheme in use. Developers can review our best practices for OAuth and GitHub App implementation, including the use of the id field when storing user reference data so that email address changes are not disruptive to a user’s apps experience.
+
+Introducing metered billing for GitHub Enterprise and GitHub Advanced Security
+August 1, 2024
+adminsbillingemuenterpriseghasghe
+Today, we are expanding our “pay-as-you-go” model to include GitHub Enterprise (GHE) and GitHub Advanced Security (GHAS) — unifying the GitHub product portfolio as metered services. This provides our customers a frictionless procurement & billing experience, adds flexibility with self-provisioning & pay-as-you-go pricing, and expands pathways to purchase GitHub products through Microsoft.
+
+Enterprise accounts on GitHub.com, created on or after August 1, 2024, will support a consumption-based metered billing model for both GHE and GHAS — enabling you to pay for the licenses you consume in a given month at month’s end as opposed to pre-purchasing for the month ahead.
+
+Further, as part of this release, pay-as-you-go enterprises will enjoy:
+
+Access to our new, enhanced billing platform
+Expanded self-provisioning experiences for GHE and GHAS – including the option to set up an Enterprise Managed Users (EMUs) configuration
+The ability to add your Azure subscription as a new payment method across your entire account
+Eligibility for Microsoft Azure Consumption Commitments (MACC) and Azure Commitment Discounts (ACD) when connected to an Azure subscription

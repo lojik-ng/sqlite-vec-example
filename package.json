@@ -1,0 +1,19 @@
+{
+  "name": "sqlite-vec-example",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "better-sqlite3": "^11.1.2",
+    "dotenv": "^16.4.5",
+    "openai": "^4.54.0",
+    "sqlite-vec": "^0.1.1"
+  }
+}
