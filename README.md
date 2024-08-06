@@ -17,7 +17,7 @@ run npm install
 run npm start
 ```
 
-Its bacically self explanatory when you check the code and its also verbosely commented.
+Its basically self explanatory when you check the code and its also verbosely commented.
 
 
 [https://github.com/asg017/sqlite-vec](https://github.com/asg017/sqlite-vec)
