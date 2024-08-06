@@ -15,7 +15,7 @@ db.pragma('journal_mode = WAL');
 sqliteVec.load(db);
 
 const embeddingAI = new OpenAI({
-    // baseURL: "http://localhost:11434/v1",
+    baseURL: "http://localhost:11434/v1",
     apiKey: process.env.OPENAI_API_KEY,
 });
 
